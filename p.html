@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Landing</title>
+</head>
+<body>
+    <h1>Halaman Landing</h1>
+    <?php
+        session_start();
+        if(!isset($_SESSION['userid'])){
+    ?>
+            <ul>
+                <li><a href="register.php">Register</a></li>
+                <li><a href="login.php">Login</a></li>
+            </ul>
+    <?php
+        }else{
+    ?>   
+        <p>Selamat datang <b><?=$_SESSION['namalengkap']?></b></p>
+        <ul>
+            <li><a href="index.php">Home</a></li>
+            <li><a href="album.php">Album</a></li>
+            <li><a href="foto.php">Foto</a></li>
+            <li><a href="logout.php">Logout</a></li>
+        </ul>
+    <?php
+        }
+    ?>
+    
+
+    <table width="100%" border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>ID</th>
+            <th>Judul</th>
+            <th>Deskripsi</th>
+            <th>Foto</th>
+            <th>Uploader</th>
+            <th>Jumlah Like</th>
+            <th>Aksi</th>
+        </tr>
+        <?php
+            include "koneksi.php";
+            $sql=mysqli_query($conn,"select * from foto,user where foto.userid=user.userid");
+            while($data=mysqli_fetch_array($sql)){
+        ?>
+            <tr>
+                <td><?=$data['fotoid']?></td>
+                <td><?=$data['judulfoto']?></td>
+                <td><?=$data['deskripsifoto']?></td>
+                <td>
+                    <img src="gambar/<?=$data['lokasifile']?>" width="200px">
+                </td>
+                <td><?=$data['namalengkap']?></td>
+                <td>
+                    <?php
+                        $fotoid=$data['fotoid'];
+                        $sql2=mysqli_query($conn,"select * from likefoto where fotoid='$fotoid'");
+                        echo mysqli_num_rows($sql2);
+                    ?>
+                </td>
+                <td>
+                    <a href="like.php?fotoid=<?=$data['fotoid']?>">Like</a>
+                    <a href="komentar.php?fotoid=<?=$data['fotoid']?>">Komentar</a>
+                </td>
+            </tr>
+        <?php
+            }
+        ?>
+    </table>
+    
+</body>
+</html>
+
+\\tambah album
+<table>
+    <tr>
+        <td>Nama Album</td>
+        <td><input type="text" name="namaalbum"></td>
+    </tr>
+    <tr>
+        <td>Deskripsi</td>
+        <td><input type="text" name="deskripsi"></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><input type="submit" value="Tambah"></td>
+    </tr>
+</table>
+
+\\tambah foto
+<form action="tambah_foto.php" method="post" enctype="multipart/form-data">
+    <table>
+        <tr>
+            <td>Judul</td>
+            <td><input type="text" name="judulfoto"></td>
+        </tr>
+        <tr>
+            <td>Deskripsi</td>
+            <td><input type="text" name="deskripsifoto"></td>
+        </tr>
+        <tr>
+            <td>Lokasi File</td>
+            <td><input type="file" name="lokasifile"></td>
+        </tr>
+        <tr>
+            <td>Album</td>
+            <td>
+                <select name="albumid">
+                <?php
+                    include "koneksi.php";
+                    $userid=$_SESSION['userid'];
+                    $sql=mysqli_query($conn,"select * from album where userid='$userid'");
+                    while($data=mysqli_fetch_array($sql)){
+                ?>
+                        <option value="<?=$data['albumid']?>"><?=$data['namaalbum']?></option>
+                <?php
+                    }
+                ?>
+                </select>
+                
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="submit" value="Tambah"></td>
+        </tr>
+    </table>
+</form>
+
+\\komentar
+<form action="tambah_komentar.php" method="post">
+    <?php
+        include "koneksi.php";
+        $fotoid=$_GET['fotoid'];
+        $sql=mysqli_query($conn,"select * from foto where fotoid='$fotoid'");
+        while($data=mysqli_fetch_array($sql)){
+    ?>
+    <input type="text" name="fotoid" value="<?=$data['fotoid']?>" hidden>
+    <table>
+        <tr>
+            <td>Judul</td>
+            <td><input type="text" name="judulfoto" value="<?=$data['judulfoto']?>"></td>
+        </tr>
+        <tr>
+            <td>Deskripsi</td>
+            <td><input type="text" name="deskripsifoto" value="<?=$data['deskripsifoto']?>"></td>
+        </tr>
+        <tr>
+            <td>Foto</td>
+            <td><img src="gambar/<?=$data['lokasifile']?>" width="200px"></td>
+        </tr>
+        <tr>
+            <td>Komentar</td>
+            <td><input type="text" name="isikomentar"></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="submit" value="Tambah"></td>
+        </tr>
+    </table>
+    <?php
+        }
+    ?>
+</form>
+
+\\Edit foto
+<form action="update_foto.php" method="post" enctype="multipart/form-data">
+    <?php
+        include "koneksi.php";
+        $fotoid=$_GET['fotoid'];
+        $sql=mysqli_query($conn,"select * from foto where fotoid='$fotoid'");
+        while($data=mysqli_fetch_array($sql)){
+    ?>
+    <input type="text" name="fotoid" value="<?=$data['fotoid']?>" hidden>
+    <table>
+        <tr>
+            <td>Judul</td>
+            <td><input type="text" name="judulfoto" value="<?=$data['judulfoto']?>"></td>
+        </tr>
+        <tr>
+            <td>Deskripsi</td>
+            <td><input type="text" name="deskripsifoto" value="<?=$data['deskripsifoto']?>"></td>
+        </tr>
+        <tr>
+            <td>Lokasi File</td>
+            <td><input type="file" name="lokasifile"></td>
+        </tr>
+        <tr>
+            <td>Album</td>
+            <td>
+                <select name="albumid">
+                <?php
+                    $userid=$_SESSION['userid'];
+                    $sql2=mysqli_query($conn,"select * from album where userid='$userid'");
+                    while($data2=mysqli_fetch_array($sql2)){
+                ?>
+                        <option value="<?=$data2['albumid']?>" <?php if($data2['albumid']==$data['albumid']){echo 'selected';}?>><?=$data2['namaalbum']?></option>
+                <?php
+                    }
+                ?>
+                </select>
+                
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="submit" value="Ubah"></td>
+        </tr>
+    </table>
+    <?php
+        }
+    ?>
+</form>
+
+\\Edit album
+<form action="update_album.php" method="post">
+    <?php
+        include "koneksi.php";
+        $albumid=$_GET['albumid'];
+        $sql=mysqli_query($conn,"select * from album where albumid='$albumid'");
+        while($data=mysqli_fetch_array($sql)){
+    ?>
+    <input type="text" name="albumid" value="<?=$data['albumid']?>" hidden>
+    <table>
+        <tr>
+            <td>Nama Album</td>
+            <td><input type="text" name="namaalbum" value="<?=$data['namaalbum']?>"></td>
+        </tr>
+        <tr>
+            <td>Deskripsi</td>
+            <td><input type="text" name="deskripsi" value="<?=$data['deskripsi']?>"></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="submit" value="Ubah"></td>
+        </tr>
+    </table>
+    <?php
+        }
+    ?>
+</form>
